@@ -1,34 +1,10 @@
 #!/usr/bin/python
 
-import os
 import click
 
 from multiprocessing import Pool
 from lib import EarthData
-
-
-def download_file(session, name, url, download_folder):
-    file_size = int(session.head(url).headers['Content-Length'])
-    file_name = download_folder + name
-
-    if not os.path.isfile(file_name) or os.path.getsize(file_name) != file_size:
-        response = session.get(url, stream=True)
-        with open(file_name, 'wb') as f:
-            for chunk in response.iter_content(chunk_size=2000000):
-                f.write(chunk)
-        if response.status_code is 200:
-            print('Successfully downloaded:' + file_name)
-        else:
-            print('Download for:' + file_name + ' failed')
-    else:
-        print('File:' + file_name + ' already downloaded')
-
-
-def ensure_slash(_ctx, _param, value):
-    if not value.endswith('/'):
-        return value + '/'
-    else:
-        return value
+from lib.download_utils import download_file
 
 
 @click.command()
@@ -40,7 +16,6 @@ def ensure_slash(_ctx, _param, value):
 @click.option('--download-folder',
               type=click.Path(exists=True),
               prompt=True,
-              callback=ensure_slash,
               help='The destination folder to store the files')
 def data_download(**kwargs):
     session = EarthData(kwargs['username'], kwargs['password'])
