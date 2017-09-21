@@ -10,7 +10,7 @@ from lib.download_utils import download_file
 @click.command()
 @click.option('--username',
               prompt='Your username',
-              help='Your EartData username')
+              help='Your EarthData username')
 @click.password_option(confirmation_prompt=False,
                        help='Your EarthData password')
 @click.option('--download-folder',
