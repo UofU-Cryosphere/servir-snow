@@ -8,7 +8,6 @@ from osgeo import gdal, osr
 from lib import TileFile
 
 OUTPUT_FORMAT = 'GTiff'
-NO_DATA_VALUE = '-9999'
 
 
 def ensure_slash(_ctx, _param, value):
@@ -43,7 +42,7 @@ def warp():
 def filter_band_values(threshold_value):
     source_file = output_file_name + '.tif'
     output_file = output_file_name + '_rf.tif'
-    gdal_calc(source_file, output_file, NO_DATA_VALUE, threshold_value)
+    gdal_calc(source_file, output_file, threshold_value)
 
 
 def merge_tiles(source_folder):

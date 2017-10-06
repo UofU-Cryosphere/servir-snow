@@ -1,11 +1,14 @@
 # Trimmed down version of gdal's distributed gdal_gdal.py helper script
 
 import os
+import numpy
 
 from osgeo import gdal, gdalnumeric
 
+NO_DATA_VALUE = int('-999')
 
-def gdal_calc(input_file, output_file_name, no_data_value, input_threshold):
+
+def gdal_calc(input_file, output_file_name, input_threshold):
     print('Generating filtered output file: ' + output_file_name)
 
     ################################################################
@@ -44,10 +47,8 @@ def gdal_calc(input_file, output_file_name, no_data_value, input_threshold):
     output_file.SetGeoTransform(source_file.GetGeoTransform())
     output_file.SetProjection(source_file.GetProjection())
 
-    no_data_value = float(no_data_value)
-
     band_output = output_file.GetRasterBand(band)
-    band_output.SetNoDataValue(no_data_value)
+    band_output.SetNoDataValue(NO_DATA_VALUE)
     # write to band
     band_output = None
 
@@ -100,12 +101,13 @@ def gdal_calc(input_file, output_file_name, no_data_value, input_threshold):
                 xoff=x_offset, yoff=y_offset,
                 win_xsize=s_x_block_size, win_ysize=s_y_block_size)
 
-            # Filter result according to given input value
-            filter_result = source_values * (source_values < input_threshold)
-            del source_values
+            source_values = source_values.astype(numpy.int16)
+            source_values[source_values > input_threshold] = NO_DATA_VALUE
 
             # write data block to the output file
             output_band = output_file.GetRasterBand(band)
             gdalnumeric.BandWriteArray(
-                output_band, filter_result, xoff=x_offset, yoff=y_offset
+                output_band, source_values, xoff=x_offset, yoff=y_offset
             )
+
+            del source_values
