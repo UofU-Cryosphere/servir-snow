@@ -1,6 +1,8 @@
 import click
+import fnmatch
 import glob
 import os
+import shutil
 import sys
 
 from gdal_calc import gdal_calc
@@ -10,7 +12,7 @@ from lib import TileFile
 OUTPUT_FORMAT = 'GTiff'
 
 
-def ensure_slash(_ctx, _param, value):
+def ensure_slash(value):
     if not value.endswith('/'):
         return value + '/'
     else:
@@ -45,8 +47,32 @@ def filter_band_values(threshold_value):
     gdal_calc(source_file, output_file, threshold_value)
 
 
+def doy_from_file_name(filename):
+    return filename.split('.')[1][1:]
+
+
+def move_files_to_folder(file, doys, source_folder):
+    for doy in doys:
+        source_folder_for_file = ensure_slash(source_folder + doy)
+        if not os.path.exists(source_folder_for_file):
+            os.mkdir(source_folder_for_file)
+
+        if fnmatch.fnmatch(file, '*' + doy + '*'):
+            shutil.move(file, source_folder_for_file)
+            return
+
+
+def days_to_process(files):
+    days = set()
+
+    [days.add(doy_from_file_name(filename)) for filename in files]
+
+    return days
+
+
 def merge_tiles(source_folder):
     out_file = output_file_name + '.tif'
+
     # Remove old output file
     if os.path.isfile(out_file):
         os.remove(out_file)
@@ -55,7 +81,7 @@ def merge_tiles(source_folder):
     ulx, uly, lrx, lry = 0.0, 0.0, 0.0, 0.0
     gdal_driver = gdal.GetDriverByName(OUTPUT_FORMAT)
 
-    for file in glob.glob(source_folder + '*.tif'):
+    for file in glob.glob(source_folder + '*[!_proj,_rf].tif'):
         file = TileFile(file)
         file_queue.append(file)
         # Remember dimensions for output file
@@ -106,29 +132,48 @@ def merge_tiles(source_folder):
 
 
 @click.command()
-@click.option('--output-file',
-              prompt='Output file name',
-              help='Output file name')
 @click.option('--source-folder',
               prompt=True,
               type=click.Path(exists=True),
-              callback=ensure_slash,
               help='Location of source files')
 @click.option('--band-threshold',
               prompt=True,
               type=int,
               help='Band threshold to filter values above')
+@click.option('--scan-folder',
+              type=bool,
+              default=False,
+              help='Scan the source folder for newly downloaded files')
 def process_folder(**kwargs):
     global output_file_name
-    output_file_name = kwargs['source_folder'] + kwargs['output_file']
+    source_folder = ensure_slash(kwargs['source_folder'])
 
-    merge_tiles(kwargs['source_folder'])
+    if 'scan_folder' in kwargs and kwargs['scan_folder'] is True:
+        print('Scanning folder for newly downloaded files')
 
-    filter_band_values(kwargs['band_threshold'])
+        files = glob.glob(source_folder + '*.tif')
+        days = sorted(days_to_process(files))
 
-    warp()
+        [
+            move_files_to_folder(file, days, source_folder)
+            for file in files
+        ]
 
-    print('All files processed')
+    doys = glob.glob(source_folder + '20[0,1,2][0-9]*')
+
+    for doy_folder in doys:
+        print('Processing folder: ' + doy_folder)
+        file_name = os.path.basename(doy_folder)
+        doy_folder = ensure_slash(doy_folder)
+        output_file_name = doy_folder + file_name
+
+        merge_tiles(doy_folder)
+
+        filter_band_values(kwargs['band_threshold'])
+
+        warp()
+
+    print('Done processing source folder')
 
 
 if __name__ == '__main__':
