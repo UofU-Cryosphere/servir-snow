@@ -1,22 +1,13 @@
 import click
-import fnmatch
 import glob
 import os
-import shutil
 import sys
 
 from gdal_calc import gdal_calc
 from osgeo import gdal, osr
-from lib import TileFile
+from lib import TileFile, SourceFolder
 
 OUTPUT_FORMAT = 'GTiff'
-
-
-def ensure_slash(value):
-    if not value.endswith('/'):
-        return value + '/'
-    else:
-        return value
 
 
 def warp():
@@ -45,29 +36,6 @@ def filter_band_values(threshold_value):
     source_file = output_file_name + '.tif'
     output_file = output_file_name + '_rf.tif'
     gdal_calc(source_file, output_file, threshold_value)
-
-
-def doy_from_file_name(filename):
-    return filename.split('.')[1][1:]
-
-
-def move_files_to_folder(file, doys, source_folder):
-    for doy in doys:
-        source_folder_for_file = ensure_slash(source_folder + doy)
-        if not os.path.exists(source_folder_for_file):
-            os.mkdir(source_folder_for_file)
-
-        if fnmatch.fnmatch(file, '*' + doy + '*'):
-            shutil.move(file, source_folder_for_file)
-            return
-
-
-def days_to_process(files):
-    days = set()
-
-    [days.add(doy_from_file_name(filename)) for filename in files]
-
-    return days
 
 
 def merge_tiles(source_folder):
@@ -146,25 +114,16 @@ def merge_tiles(source_folder):
               help='Scan the source folder for newly downloaded files')
 def process_folder(**kwargs):
     global output_file_name
-    source_folder = ensure_slash(kwargs['source_folder'])
+
+    source_folder = SourceFolder(kwargs['source_folder'])
 
     if 'scan_folder' in kwargs and kwargs['scan_folder'] is True:
         print('Scanning folder for newly downloaded files')
+        source_folder.scan_for_new_files()
 
-        files = glob.glob(source_folder + '*.tif')
-        days = sorted(days_to_process(files))
-
-        [
-            move_files_to_folder(file, days, source_folder)
-            for file in files
-        ]
-
-    doys = glob.glob(source_folder + '20[0,1,2][0-9]*')
-
-    for doy_folder in doys:
+    for doy_folder in source_folder.get_folders_to_process():
         print('Processing folder: ' + doy_folder)
-        file_name = os.path.basename(doy_folder)
-        doy_folder = ensure_slash(doy_folder)
+        file_name = os.path.basename(os.path.dirname(doy_folder))
         output_file_name = doy_folder + file_name
 
         merge_tiles(doy_folder)
