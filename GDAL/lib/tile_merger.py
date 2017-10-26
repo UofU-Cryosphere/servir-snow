@@ -19,23 +19,17 @@ class TileMerger:
             os.remove(out_file)
 
         file_queue = []
-        ulx, uly, lrx, lry = 0.0, 0.0, 0.0, 0.0
+        ulx, uly, lrx, lry = None, None, None, None
         gdal_driver = gdal.GetDriverByName(OUTPUT_FORMAT)
 
         for file in glob.glob(self.source_folder + '*[!_proj,_rf].tif'):
             file = TileFile(file)
             file_queue.append(file)
             # Remember dimensions for output file
-            if ulx == 0.0:
-                ulx = file.ulx
-            else:
-                ulx = min(ulx, file.ulx)
-            uly = max(uly, file.uly)
-            lrx = max(lrx, file.lrx)
-            if lry == 0.0:
-                lry = file.lry
-            else:
-                lry = min(lry, file.lry)
+            ulx = min(ulx or file.ulx, file.ulx)
+            uly = max(uly or file.uly, file.uly)
+            lrx = max(lrx or file.lrx, file.lrx)
+            lry = min(lry or file.lry, file.lry)
 
         pixel_width = file_queue[0].pixel_width
         pixel_height = file_queue[0].pixel_height
