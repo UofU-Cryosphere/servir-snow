@@ -1,5 +1,6 @@
-from pyproj import Proj
+from pyproj import Proj, transform
 
+INPUT_PROJECTION = Proj(init='epsg:4326')
 
 #  Northern Hemisphere  #
 # ===================== #
@@ -29,6 +30,13 @@ NORTH_PROJECTION = '''PROJCS["NSIDC EASE-Grid North",
 NORTH_PROJ = Proj(init='epsg:3408')
 NORTH_UL_LON = -135  # This is an approximate value
 NORTH_UL_LAT = -86.5  # This is an approximate value
+# Converts coordinates from WGS 1984 to polar grid coordinates
+NORTH_UL_X, NORTH_UL_Y = transform(
+    INPUT_PROJECTION,
+    NORTH_PROJ,
+    NORTH_UL_LON,
+    NORTH_UL_LAT
+)
 
 # NSIDC South Pole EASE-Grid
 SOUTH_PROJECTION = '''PROJCS["NSIDC EASE-Grid South",

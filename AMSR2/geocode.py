@@ -5,13 +5,11 @@ import os
 import sys
 
 from osgeo.gdalnumeric import *
-from pyproj import Proj, transform
 
 import nsidc
 
 # pixel spatial resolution in meters
 SPAT_RES = 25000
-INPUT_PROJECTION = Proj(init='epsg:4326')
 
 NORTH_SWE = '/HDFEOS/GRIDS/Northern Hemisphere/Data Fields/SWE_NorthernDaily'
 SOUTH_SWE = '/HDFEOS/GRIDS/Southern Hemisphere/Data Fields/SWE_SouthernDaily'
@@ -45,14 +43,6 @@ def convert_file(infile):
 
     gdal_driver = gdal.GetDriverByName("GTiff")
 
-    # Converts coordinates from WGS 1984 to polar grid coordinates
-    ul_x, ul_y = transform(
-        INPUT_PROJECTION,
-        nsidc.NORTH_PROJ,
-        nsidc.NORTH_UL_LON,
-        nsidc.NORTH_UL_LAT
-    )
-
     output_file = gdal_driver.Create(
         output_file,
         tiff_data.shape[1],
@@ -60,7 +50,9 @@ def convert_file(infile):
         1,
         gdal.GDT_Byte
     )
-    output_file.SetGeoTransform([ul_x, SPAT_RES, 0, ul_y, 0, -SPAT_RES])
+    output_file.SetGeoTransform(
+        [nsidc.NORTH_UL_X, SPAT_RES, 0, nsidc.NORTH_UL_Y, 0, -SPAT_RES]
+    )
     output_file.SetProjection(nsidc.NORTH_PROJECTION)
 
     # Write gridded swath to the output file
