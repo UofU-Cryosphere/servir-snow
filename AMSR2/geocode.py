@@ -37,7 +37,7 @@ def get_file_data(file):
 
 def convert_file(infile):
     output_file = os.path.basename(infile).split('.')[0] + '_' + NORTH_SWE_FILE
-    output_file = os.path.dirname(infile) + '/' + output_file
+    output_file = os.path.join(os.path.dirname(infile), output_file)
     if os.path.isfile(output_file):
         return 1
 
@@ -71,21 +71,14 @@ def convert_file(infile):
     output_band = None
 
 
-def ensure_slash(_ctx, _param, value):
-    if not value.endswith('/'):
-        return value + '/'
-    else:
-        return value
-
-
 @click.command()
 @click.option('--source-folder',
               prompt=True,
               type=click.Path(exists=True),
-              callback=ensure_slash,
               help='Location of source files')
 def process_folder(**kwargs):
-    for file in glob.glob(kwargs['source_folder'] + '*' + FILE_ENDING):
+    file_pattern = os.path.join(kwargs['source_folder'], '*' + FILE_ENDING)
+    for file in glob.glob(file_pattern):
         _filename = os.path.basename(file)
 
         if _filename.endswith(NORTH_SWE_FILE):
