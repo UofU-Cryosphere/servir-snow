@@ -18,8 +18,8 @@ from lib.download_utils import download_file
               prompt=True,
               help='The destination folder to store the files')
 def data_download(**kwargs):
-    session = EarthData(kwargs['username'], kwargs['password'])
-    file_list = session.list_datafiles('AMSR2')
+    session = EarthData(kwargs['username'], kwargs['password'], 'AMSR2')
+    file_list = session.list_datafiles()
     p = Pool(4)
     p_res = [
         p.apply_async(

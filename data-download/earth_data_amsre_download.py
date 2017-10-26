@@ -30,15 +30,15 @@ from lib.download_utils import *
               type=int,
               help='The ending day to download data from')
 def data_download(**kwargs):
-    session = EarthData(kwargs['username'], kwargs['password'])
+    session = EarthData(kwargs['username'], kwargs['password'], 'AMSRE')
     # To authenticate for the session
-    session.get_index('AMSRE')
+    session.get_index()
 
     dates = dates_in_range(kwargs['year'], kwargs['day_from'], kwargs['day_to'])
     download_folder = ensure_folder(
         kwargs['download_folder'] + '/' + str(kwargs['year'])
     )
-    file_list = session.files_for_date_range('AMSRE', dates)
+    file_list = session.files_for_date_range(dates)
 
     p = Pool(4)
     p_res = [
