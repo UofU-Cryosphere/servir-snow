@@ -17,7 +17,7 @@ NORTH_SWE = '/HDFEOS/GRIDS/Northern Hemisphere/Data Fields/SWE_NorthernDaily'
 SOUTH_SWE = '/HDFEOS/GRIDS/Southern Hemisphere/Data Fields/SWE_SouthernDaily'
 
 FILE_ENDING = '.he5'
-NORTH_SWE_FILE = 'North_SWE' + FILE_ENDING
+NORTH_SWE_FILE = 'North_SWE.tif'
 
 BAND_THRESHOLD = 240
 
