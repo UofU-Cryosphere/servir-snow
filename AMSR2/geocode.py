@@ -19,6 +19,21 @@ SOUTH_SWE = '/HDFEOS/GRIDS/Southern Hemisphere/Data Fields/SWE_SouthernDaily'
 FILE_ENDING = '.he5'
 NORTH_SWE_FILE = 'North_SWE' + FILE_ENDING
 
+BAND_THRESHOLD = 240
+
+
+def get_file_data(file):
+    h5file = tables.open_file(file)
+    north_grid_swe = h5file.get_node(NORTH_SWE).read()
+    h5file.close()
+
+    # Filter all values above threshold
+    north_grid_swe[north_grid_swe > BAND_THRESHOLD] = 0
+    # Double remaining values
+    north_grid_swe *= 2
+
+    return north_grid_swe
+
 
 def convert_file(infile):
     output_file = os.path.basename(infile).split('.')[0] + '_' + NORTH_SWE_FILE
@@ -26,9 +41,7 @@ def convert_file(infile):
     if os.path.isfile(output_file):
         return 1
 
-    h5file = tables.open_file(infile)
-    north_grid_swe = h5file.get_node(NORTH_SWE).read()
-    h5file.close()
+    tiff_data = get_file_data(infile)
 
     gdal_driver = gdal.GetDriverByName("GTiff")
 
@@ -42,8 +55,8 @@ def convert_file(infile):
 
     output_file = gdal_driver.Create(
         output_file,
-        north_grid_swe.shape[1],
-        north_grid_swe.shape[0],
+        tiff_data.shape[1],
+        tiff_data.shape[0],
         1,
         gdal.GDT_Byte
     )
@@ -52,7 +65,7 @@ def convert_file(infile):
 
     # Write gridded swath to the output file
     output_band = output_file.GetRasterBand(1)
-    BandWriteArray(output_band, north_grid_swe)
+    BandWriteArray(output_band, tiff_data)
 
     output_file = None
     output_band = None
