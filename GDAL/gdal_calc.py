@@ -103,6 +103,7 @@ def gdal_calc(input_file, output_file_name, input_threshold):
 
             source_values = source_values.astype(numpy.int16)
             source_values[source_values > input_threshold] = NO_DATA_VALUE
+            source_values[source_values < 0] = NO_DATA_VALUE
 
             # write data block to the output file
             output_band = output_file.GetRasterBand(band)
