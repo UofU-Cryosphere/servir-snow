@@ -17,9 +17,7 @@ def gdal_calc(input_file, output_file_name, input_threshold):
 
     band = 1
     source_file = gdal.Open(input_file, gdal.GA_ReadOnly)
-    data_type = source_file.GetRasterBand(band).DataType
 
-    file_no_data_value = source_file.GetRasterBand(band).GetNoDataValue()
     output_dimensions = {
         'x': source_file.RasterXSize,
         'y': source_file.RasterYSize
@@ -40,17 +38,12 @@ def gdal_calc(input_file, output_file_name, input_threshold):
         output_dimensions['x'],
         output_dimensions['y'],
         band,
-        data_type
+        gdal.GDT_Int16
     )
 
     # set output geo info based on input layer
     output_file.SetGeoTransform(source_file.GetGeoTransform())
     output_file.SetProjection(source_file.GetProjection())
-
-    band_output = output_file.GetRasterBand(band)
-    band_output.SetNoDataValue(NO_DATA_VALUE)
-    # write to band
-    band_output = None
 
     ################################################################
     # find block size to chop grids into bite-sized chunks
@@ -107,6 +100,7 @@ def gdal_calc(input_file, output_file_name, input_threshold):
 
             # write data block to the output file
             output_band = output_file.GetRasterBand(band)
+            output_band.SetNoDataValue(NO_DATA_VALUE)
             gdalnumeric.BandWriteArray(
                 output_band, source_values, xoff=x_offset, yoff=y_offset
             )
