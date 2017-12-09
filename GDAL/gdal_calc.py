@@ -106,3 +106,6 @@ def gdal_calc(input_file, output_file_name, input_threshold):
             )
 
             del source_values
+
+    # Close the file handler
+    del output_file
