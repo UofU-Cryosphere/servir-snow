@@ -69,7 +69,7 @@ def parse_year(_ctx, _param, value):
     if value:
         return range(value, value + 1)
     else:
-        return range(2000, datetime.date.today().year)
+        return range(2000, datetime.date.today().year + 1)
 
 
 @click.command()
@@ -117,11 +117,11 @@ def process_folder(**kwargs):
             print('Processing folder: ' + doy_folder)
             file_name = os.path.basename(os.path.dirname(doy_folder))
             output_file_name = doy_folder + file_name
-
-            TileMerger(
-                doy_folder,
-                output_file_name + MOSAIC_FILE_SUFFIX
-            ).create_mosaic()
+            #
+            # TileMerger(
+            #     doy_folder,
+            #     output_file_name + MOSAIC_FILE_SUFFIX
+            # ).create_mosaic()
 
             warp()
 
