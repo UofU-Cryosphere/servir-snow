@@ -6,9 +6,23 @@ import numpy
 from osgeo import gdal, gdalnumeric
 
 NO_DATA_VALUE = int('-999')
+FILTER_TYPE_LIMITS = {
+    'forcing': {
+        'lower': 0,
+        'upper': 400
+    },
+    'fraction': {
+        'lower': 15,
+        'upper': 100
+    }
+}
+FILTER_TYPES = FILTER_TYPE_LIMITS.keys()
 
 
-def gdal_calc(input_file, output_file_name, input_threshold):
+def gdal_calc(input_file, output_file_name, filter_type):
+    if filter_type not in FILTER_TYPE_LIMITS:
+        return -1
+
     print('Generating filtered output file: ' + output_file_name)
 
     ################################################################
@@ -62,6 +76,10 @@ def gdal_calc(input_file, output_file_name, input_threshold):
         (output_dimensions['y'] + s_y_block_size - 1) / s_y_block_size
     )
 
+    # Fetch limit values
+    lower_limit = FILTER_TYPE_LIMITS[filter_type]['lower']
+    upper_limit = FILTER_TYPE_LIMITS[filter_type]['upper']
+
     ################################################################
     # loop through blocks of data
     ################################################################
@@ -95,8 +113,8 @@ def gdal_calc(input_file, output_file_name, input_threshold):
                 win_xsize=s_x_block_size, win_ysize=s_y_block_size)
 
             source_values = source_values.astype(numpy.int16)
-            source_values[source_values > input_threshold] = NO_DATA_VALUE
-            source_values[source_values < 0] = NO_DATA_VALUE
+            source_values[source_values < lower_limit] = NO_DATA_VALUE
+            source_values[source_values > upper_limit] = NO_DATA_VALUE
 
             # write data block to the output file
             output_band = output_file.GetRasterBand(band)
