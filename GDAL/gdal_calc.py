@@ -6,9 +6,23 @@ import numpy
 from osgeo import gdal, gdalnumeric
 
 NO_DATA_VALUE = int('-999')
+FILTER_TYPE_LIMITS = {
+    'forcing': {
+        'lower': 0,
+        'upper': 400
+    },
+    'fraction': {
+        'lower': 15,
+        'upper': 100
+    }
+}
+FILTER_TYPES = FILTER_TYPE_LIMITS.keys()
 
 
-def gdal_calc(input_file, output_file_name, input_threshold):
+def gdal_calc(input_file, output_file_name, filter_type):
+    if filter_type not in FILTER_TYPE_LIMITS:
+        return -1
+
     print('Generating filtered output file: ' + output_file_name)
 
     ################################################################
@@ -17,9 +31,7 @@ def gdal_calc(input_file, output_file_name, input_threshold):
 
     band = 1
     source_file = gdal.Open(input_file, gdal.GA_ReadOnly)
-    data_type = source_file.GetRasterBand(band).DataType
 
-    file_no_data_value = source_file.GetRasterBand(band).GetNoDataValue()
     output_dimensions = {
         'x': source_file.RasterXSize,
         'y': source_file.RasterYSize
@@ -40,17 +52,12 @@ def gdal_calc(input_file, output_file_name, input_threshold):
         output_dimensions['x'],
         output_dimensions['y'],
         band,
-        data_type
+        gdal.GDT_Int16
     )
 
     # set output geo info based on input layer
     output_file.SetGeoTransform(source_file.GetGeoTransform())
     output_file.SetProjection(source_file.GetProjection())
-
-    band_output = output_file.GetRasterBand(band)
-    band_output.SetNoDataValue(NO_DATA_VALUE)
-    # write to band
-    band_output = None
 
     ################################################################
     # find block size to chop grids into bite-sized chunks
@@ -68,6 +75,10 @@ def gdal_calc(input_file, output_file_name, input_threshold):
     total_y_blocks = int(
         (output_dimensions['y'] + s_y_block_size - 1) / s_y_block_size
     )
+
+    # Fetch limit values
+    lower_limit = FILTER_TYPE_LIMITS[filter_type]['lower']
+    upper_limit = FILTER_TYPE_LIMITS[filter_type]['upper']
 
     ################################################################
     # loop through blocks of data
@@ -102,12 +113,17 @@ def gdal_calc(input_file, output_file_name, input_threshold):
                 win_xsize=s_x_block_size, win_ysize=s_y_block_size)
 
             source_values = source_values.astype(numpy.int16)
-            source_values[source_values > input_threshold] = NO_DATA_VALUE
+            source_values[source_values < lower_limit] = NO_DATA_VALUE
+            source_values[source_values > upper_limit] = NO_DATA_VALUE
 
             # write data block to the output file
             output_band = output_file.GetRasterBand(band)
+            output_band.SetNoDataValue(NO_DATA_VALUE)
             gdalnumeric.BandWriteArray(
                 output_band, source_values, xoff=x_offset, yoff=y_offset
             )
 
             del source_values
+
+    # Close the file handler
+    del output_file

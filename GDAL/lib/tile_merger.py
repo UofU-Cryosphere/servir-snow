@@ -13,16 +13,14 @@ class TileMerger:
         self.output_file_name = output_file_name
 
     def create_mosaic(self):
-        out_file = self.output_file_name + '.tif'
-
-        if os.path.isfile(out_file):
-            os.remove(out_file)
+        if os.path.isfile(self.output_file_name):
+            os.remove(self.output_file_name)
 
         file_queue = []
         ulx, uly, lrx, lry = None, None, None, None
         gdal_driver = gdal.GetDriverByName(OUTPUT_FORMAT)
 
-        for file in glob.glob(self.source_folder + '*[!_proj,_rf].tif'):
+        for file in glob.glob(self.source_folder + '*[!_SCA,_rf].tif'):
             file = TileFile(file)
             file_queue.append(file)
             # Remember dimensions for output file
@@ -41,8 +39,9 @@ class TileMerger:
         xsize = int((lrx - ulx) / pixel_width + 0.5)
         ysize = int((lry - uly) / pixel_height + 0.5)
 
-        output_file = gdal_driver.Create(out_file, xsize, ysize, bands,
-                                         band_type)
+        output_file = gdal_driver.Create(self.output_file_name,
+                                         xsize, ysize,
+                                         bands, band_type)
 
         output_file.SetGeoTransform(geotransform)
         output_file.SetProjection(file_queue[0].projection)
