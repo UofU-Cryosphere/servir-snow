@@ -117,11 +117,11 @@ def process_folder(**kwargs):
             print('Processing folder: ' + doy_folder)
             file_name = os.path.basename(os.path.dirname(doy_folder))
             output_file_name = doy_folder + file_name
-            #
-            # TileMerger(
-            #     doy_folder,
-            #     output_file_name + MOSAIC_FILE_SUFFIX
-            # ).create_mosaic()
+
+            TileMerger(
+                doy_folder,
+                output_file_name + MOSAIC_FILE_SUFFIX
+            ).create_mosaic()
 
             warp()
 
