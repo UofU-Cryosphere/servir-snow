@@ -3,7 +3,6 @@ import datetime
 import os
 import sys
 
-from gdal_calc import gdal_calc
 from osgeo import gdal, osr
 from lib import SourceFolder, TileMerger
 
@@ -19,12 +18,11 @@ FILTER_TYPES = {
 }
 MOSAIC_FILE_SUFFIX = '.tif'
 OUTPUT_FORMAT = 'GTiff'
-PROJECTED_FILE_SUFFIX = '_wgs84.tif'
 
 
 def warp():
-    source = gdal.Open(output_file_name + MOSAIC_FILE_SUFFIX)
-    output_file = output_file_name + PROJECTED_FILE_SUFFIX
+    source = gdal.Open(output_file_name + MOSAIC_FILE_SUFFIX, gdal.GA_ReadOnly)
+    output_file = output_file_name + FILTER_TYPES[source_type]['file_suffix']
 
     print('Generating projected output file: ' + output_file)
 
@@ -46,12 +44,6 @@ def warp():
     del tmp_ds
     del file
     del source
-
-
-def filter_band_values():
-    source_file = output_file_name + PROJECTED_FILE_SUFFIX
-    output_file = output_file_name + FILTER_TYPES[source_type]['file_suffix']
-    gdal_calc(source_file, output_file, source_type)
 
 
 def validate_types(ctx, _param, value):
@@ -120,19 +112,11 @@ def process_folder(**kwargs):
 
             TileMerger(
                 doy_folder,
-                output_file_name + MOSAIC_FILE_SUFFIX
+                output_file_name + MOSAIC_FILE_SUFFIX,
+                source_type
             ).create_mosaic()
 
             warp()
-
-            filter_band_values()
-
-            # Remove the re-projected mosaic temp file after successful filter
-            try:
-                if os.path.isfile(output_file_name + PROJECTED_FILE_SUFFIX):
-                    os.remove(output_file_name + PROJECTED_FILE_SUFFIX)
-            except PermissionError:
-                pass
 
             print('Done processing source folder: ' + source_path)
 

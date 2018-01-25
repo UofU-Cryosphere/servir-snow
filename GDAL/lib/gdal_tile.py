@@ -1,16 +1,37 @@
 # Trimmed down version of gdal's distributed gdal_merge.py helper script
 
-from osgeo import gdal
+import numpy
+
+from osgeo import gdal, gdalnumeric
+
+FILTER_TYPE_LIMITS = {
+    'forcing': {
+        'lower': 0.0,
+        'upper': 400.0
+    },
+    'fraction': {
+        'lower': 15.0,
+        'upper': 100.0
+    }
+}
+FILTER_TYPES = FILTER_TYPE_LIMITS.keys()
+NO_DATA_VALUE = -999.0
 
 
 class TileFile:
-    """A class holding information about a GDAL file."""
+    """
+    A class holding information for a tile file and method to copy band data
+    into a target file.
 
-    def __init__(self, filename):
+    """
+
+    def __init__(self, filename, source_type):
         """
         Initialize file_info from filename
 
-        filename -- Name of file to read.
+        filename    -- Name of file to read.
+        source_type -- Type of input file. This will determine the upper and
+                       lower limit to filter band values.
 
         """
         tile_file = gdal.Open(filename)
@@ -29,6 +50,9 @@ class TileFile:
         self.lrx = self.calculate_lr(self.ulx, self.pixel_width, self.xsize)
         self.lry = self.calculate_lr(self.uly, self.pixel_height, self.ysize)
 
+        self.lower_limit = FILTER_TYPE_LIMITS[source_type]['lower']
+        self.upper_limit = FILTER_TYPE_LIMITS[source_type]['upper']
+
         del tile_file
 
     def report(self):
@@ -44,71 +68,46 @@ class TileFile:
 
     def copy_into(self, output_file, source_band=1, target_band=1):
         """
-        Copy this files image into target file.
-
-        This method will compute the overlap area of the file_info objects
-        file, and the target gdal.Dataset object, and copy the image data
-        for the common window area.  It is assumed that the files are in
-        a compatible projection ... no checking or warping is done.  However,
-        if the destination file is a different resolution, or different
-        image pixel type, the appropriate resampling and conversions will
-        be done (using normal GDAL promotion/demotion rules).
+        Copy data to target file and filter according to the type given in
+        the initializer.
 
         output_file -- gdal.Dataset object for the file into which some or all
         of this file may be copied.
-
-        Returns 1 on success (or if nothing needs to be copied), and zero one
-        failure.
         """
         t_geotransform = output_file.GetGeoTransform()
         t_ulx = t_geotransform[0]
         t_uly = t_geotransform[3]
         t_pixel_width = t_geotransform[1]
         t_pixel_height = t_geotransform[5]
-        t_lrx = self.calculate_lr(t_ulx, t_pixel_width, output_file.RasterXSize)
-        t_lry = self.calculate_lr(
-            t_uly, t_pixel_height, output_file.RasterYSize
-        )
 
-        # figure out intersection region
+        # Intersection region
         tgw_ulx = max(t_ulx, self.ulx)
-        tgw_lrx = min(t_lrx, self.lrx)
         if t_pixel_height < 0:
             tgw_uly = min(t_uly, self.uly)
-            tgw_lry = max(t_lry, self.lry)
         else:
             tgw_uly = max(t_uly, self.uly)
-            tgw_lry = min(t_lry, self.lry)
 
-        # compute target window in pixel coordinates.
+        # Target window in pixel coordinates.
         tw_xoff = int((tgw_ulx - t_ulx) / t_pixel_width + 0.1)
         tw_yoff = int((tgw_uly - t_uly) / t_pixel_height + 0.1)
-        tw_xsize = int((tgw_lrx - t_ulx) / t_pixel_width + 0.5) - tw_xoff
-        tw_ysize = int((tgw_lry - t_uly) / t_pixel_height + 0.5) - tw_yoff
 
-        if tw_xsize < 1 or tw_ysize < 1:
-            return 1
+        source_file = gdal.Open(self.filename, gdal.GA_ReadOnly)
 
-        # Compute source window in pixel coordinates.
-        sw_xoff = int((tgw_ulx - self.ulx) / self.pixel_width)
-        sw_yoff = int((tgw_uly - self.uly) / self.pixel_height)
-        sw_xsize = int((tgw_lrx - self.ulx) / self.pixel_width + 0.5) - sw_xoff
-        sw_ysize = int((tgw_lry - self.uly) / self.pixel_height + 0.5) - sw_yoff
-
-        if sw_xsize < 1 or sw_ysize < 1:
-            return 1
-
-        # Open the source file, and copy the selected region.
-        source_file = gdal.Open(self.filename)
-
-        source_band = source_file.GetRasterBand(source_band)
         target_band = output_file.GetRasterBand(target_band)
+        target_band.SetNoDataValue(NO_DATA_VALUE)
 
-        data = source_band.ReadRaster(sw_xoff, sw_yoff, sw_xsize, sw_ysize,
-                                      tw_xsize, tw_ysize, target_band.DataType)
-        target_band.WriteRaster(tw_xoff, tw_yoff, tw_xsize, tw_ysize,
-                                data, tw_xsize, tw_ysize, target_band.DataType)
+        source_values = gdalnumeric.BandReadAsArray(
+            source_file.GetRasterBand(source_band),
+            buf_type=gdal.GDT_Float32
+        )
 
+        # Filter by upper and lower band threshold values
+        source_values[source_values < self.lower_limit] = NO_DATA_VALUE
+        source_values[source_values > self.upper_limit] = NO_DATA_VALUE
+
+        gdalnumeric.BandWriteArray(
+            target_band, source_values, xoff=tw_xoff, yoff=tw_yoff
+        )
+
+        del source_values
         del source_file
-
-        return 1

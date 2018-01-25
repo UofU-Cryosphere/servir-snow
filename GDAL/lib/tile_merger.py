@@ -8,9 +8,10 @@ OUTPUT_FORMAT = 'GTiff'
 
 
 class TileMerger:
-    def __init__(self, source_folder, output_file_name):
+    def __init__(self, source_folder, output_file_name, source_type):
         self.source_folder = source_folder
         self.output_file_name = output_file_name
+        self.source_type = source_type
 
     def create_mosaic(self):
         if os.path.isfile(self.output_file_name):
@@ -21,8 +22,9 @@ class TileMerger:
         gdal_driver = gdal.GetDriverByName(OUTPUT_FORMAT)
 
         for file in glob.glob(self.source_folder + '*[!_SCA,_rf].tif'):
-            file = TileFile(file)
+            file = TileFile(file, self.source_type)
             file_queue.append(file)
+
             # Remember dimensions for output file
             ulx = min(ulx or file.ulx, file.ulx)
             uly = max(uly or file.uly, file.uly)
@@ -33,15 +35,17 @@ class TileMerger:
         pixel_height = file_queue[0].pixel_height
 
         bands = file_queue[0].bands
-        band_type = file_queue[0].band_type
 
         geotransform = [ulx, pixel_width, 0, uly, 0, pixel_height]
         xsize = int((lrx - ulx) / pixel_width + 0.5)
         ysize = int((lry - uly) / pixel_height + 0.5)
 
-        output_file = gdal_driver.Create(self.output_file_name,
-                                         xsize, ysize,
-                                         bands, band_type)
+        output_file = gdal_driver.Create(
+            self.output_file_name,
+            xsize, ysize,
+            bands,
+            gdal.GDT_Int16                # Int16 to enable NoData value of -999
+        )
 
         output_file.SetGeoTransform(geotransform)
         output_file.SetProjection(file_queue[0].projection)
