@@ -2,7 +2,7 @@ import glob
 import os
 
 from osgeo import gdal
-from .gdal_tile import TileFile
+from .tile_file import TileFile
 
 OUTPUT_FORMAT = 'GTiff'
 
