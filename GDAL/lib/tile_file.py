@@ -1,7 +1,5 @@
 # Trimmed down version of gdal's distributed gdal_merge.py helper script
 
-import numpy
-
 from osgeo import gdal, gdalnumeric
 
 FILTER_TYPE_LIMITS = {
