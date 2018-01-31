@@ -1,4 +1,4 @@
-from .gdal_tile import TileFile
+from .tile_file import TileFile
 from .source_folder import SourceFolder
 from .tile_merger import TileMerger
 
