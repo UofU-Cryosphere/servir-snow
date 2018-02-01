@@ -1,1 +1,4 @@
 .idea
+
+# Test files
+.pytest_cache
