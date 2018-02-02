@@ -26,10 +26,10 @@ class TileMerger:
             file_queue.append(file)
 
             # Remember dimensions for output file
-            ulx = min(ulx or file.ulx, file.ulx)
-            uly = max(uly or file.uly, file.uly)
-            lrx = max(lrx or file.lrx, file.lrx)
-            lry = min(lry or file.lry, file.lry)
+            ulx = min(file.ulx if ulx is None else ulx, file.ulx)
+            uly = max(file.uly if uly is None else uly, file.uly)
+            lrx = max(file.lrx if lrx is None else lrx, file.lrx)
+            lry = min(file.lry if lry is None else lry, file.lry)
 
         pixel_width = file_queue[0].pixel_width
         pixel_height = file_queue[0].pixel_height
