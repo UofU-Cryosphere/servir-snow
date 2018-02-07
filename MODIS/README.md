@@ -1,4 +1,5 @@
 ## GDAL scripts to merge MODIS images
+[![Build Status](https://travis-ci.org/UofU-Cryosphere/servir-snow.svg?branch=master)](https://travis-ci.org/UofU-Cryosphere/servir-snow)
 
 ### Features
 The script processes all images found inside each day folder of a year for given
