@@ -110,11 +110,14 @@ def process_folder(**kwargs):
             file_name = os.path.basename(os.path.dirname(doy_folder))
             output_file_name = doy_folder + file_name
 
-            TileMerger(
+            merger = TileMerger(
                 doy_folder,
                 output_file_name + MOSAIC_FILE_SUFFIX,
                 source_type
             ).create_mosaic()
+
+            if merger == -1:
+                continue
 
             warp()
 

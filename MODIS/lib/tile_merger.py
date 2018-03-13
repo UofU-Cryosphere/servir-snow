@@ -31,6 +31,9 @@ class TileMerger:
             lrx = max(file.lrx if lrx is None else lrx, file.lrx)
             lry = min(file.lry if lry is None else lry, file.lry)
 
+        if len(file_queue) == 0:
+            return -1
+
         pixel_width = file_queue[0].pixel_width
         pixel_height = file_queue[0].pixel_height
 
