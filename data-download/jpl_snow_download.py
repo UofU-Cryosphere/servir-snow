@@ -11,10 +11,10 @@ from bs4 import BeautifulSoup
 
 class JPLData(requests.Session):
     BASE_URL = 'https://snow-data.jpl.nasa.gov'
-
+    ARCHIVE_PATH = '-historic'
     TYPES = {
-        'MODSCAG': BASE_URL + '/modscag-historic/',
-        'MODDRFS': BASE_URL + '/moddrfs-historic/'
+        'MODSCAG': BASE_URL + '/modscag',
+        'MODDRFS': BASE_URL + '/moddrfs'
     }
 
     FILE_BASE_REGEX = 'MOD09GA[.]A[\d]{7}[.]'
@@ -30,6 +30,14 @@ class JPLData(requests.Session):
         regex = '(' + '|'.join(tiles) + ').*(' + '|'.join(file_types) + ')$'
         return re.compile(self.FILE_BASE_REGEX + regex, re.IGNORECASE)
 
+    def __get_index_url(self, types, year, day):
+        url = self.TYPES[types]
+        if year < 2015:
+            url += self.ARCHIVE_PATH
+        url += '/' + str(year) + '/' + day + '/'
+
+        return url
+
     def files_for_date_range(self, types, tiles, year, day_range, file_types):
         files = {}
 
@@ -37,7 +45,7 @@ class JPLData(requests.Session):
             print('Parsing download links for day: ' + str(day))
             day = str(day).rjust(3, '0')
 
-            index_dir_url = self.TYPES[types] + str(year) + '/' + day + '/'
+            index_dir_url = self.__get_index_url(types, year, day)
             file_links = BeautifulSoup(
                 self.get(index_dir_url).text, 'html.parser'
             ).find_all(
@@ -69,6 +77,13 @@ def get_from_jpl(username, password, name, url, download_folder):
     return download_file(session, name, url, download_folder)
 
 
+def parse_year(_ctx, _param, value):
+    if value:
+        return range(value, value + 1)
+    else:
+        return range(2000, datetime.date.today().year + 1)
+
+
 @click.command()
 @click.option('--username',
               prompt='Your username',
@@ -80,8 +95,11 @@ def get_from_jpl(username, password, name, url, download_folder):
               prompt=True,
               help='The destination folder to store the files')
 @click.option('--year',
-              prompt=True,
-              help='The year (YYYY) to download data from')
+              prompt=False,
+              type=int,
+              callback=parse_year,
+              help='The year (YYYY) to download data from.'
+                   'Leave blank to download all data starting from 2000')
 @click.option('--day-from',
               prompt=True,
               type=int,
@@ -108,32 +126,34 @@ def data_download(**kwargs):
     session.get_index(kwargs['types'])
 
     days = range(kwargs['day_from'], kwargs['day_to'] + 1)
-    download_folder = ensure_folder(
-        ensure_slash(kwargs['download_folder']) + str(kwargs['year'])
-    )
-    print('Downloading files: ' + ', '.join(kwargs['file_names']) +
-          ' for tiles: ' + ', '.join(kwargs['tiles']) +
-          ' in day range ' + str(kwargs['day_from']) +
-          ' to ' + str(kwargs['day_to']) +
-          ' for year ' + str(kwargs['year']))
 
-    file_list = session.files_for_date_range(
-        kwargs['types'],
-        kwargs['tiles'],
-        kwargs['year'],
-        days,
-        kwargs['file_names'],
-    )
+    for year in kwargs['year']:
+        download_folder = ensure_folder(
+            ensure_slash(kwargs['download_folder']) + str(year)
+        )
+        print('Downloading files: ' + ', '.join(kwargs['file_names']) +
+              ' for tiles: ' + ', '.join(kwargs['tiles']) +
+              ' in day range ' + str(kwargs['day_from']) +
+              ' to ' + str(kwargs['day_to']) +
+              ' for year ' + str(year))
 
-    print('Found ' + str(len(file_list)) + ' files to download')
-    p = Pool(4)
-    p_res = [
-        p.apply_async(
-            get_from_jpl,
-            (kwargs['username'], kwargs['password'], name, url, download_folder)
-        ) for name, url in file_list.items()
-    ]
-    [res.get() for res in p_res]
+        file_list = session.files_for_date_range(
+            kwargs['types'],
+            kwargs['tiles'],
+            year,
+            days,
+            kwargs['file_names'],
+        )
+
+        print('Found ' + str(len(file_list)) + ' files to download')
+        p = Pool(4)
+        p_res = [
+            p.apply_async(
+                get_from_jpl,
+                (kwargs['username'], kwargs['password'], name, url, download_folder)
+            ) for name, url in file_list.items()
+        ]
+        [res.get() for res in p_res]
 
 
 if __name__ == '__main__':
