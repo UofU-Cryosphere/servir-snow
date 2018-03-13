@@ -11,10 +11,10 @@ from bs4 import BeautifulSoup
 
 class JPLData(requests.Session):
     BASE_URL = 'https://snow-data.jpl.nasa.gov'
-
+    ARCHIVE_PATH = '-historic'
     TYPES = {
-        'MODSCAG': BASE_URL + '/modscag-historic/',
-        'MODDRFS': BASE_URL + '/moddrfs-historic/'
+        'MODSCAG': BASE_URL + '/modscag',
+        'MODDRFS': BASE_URL + '/moddrfs'
     }
 
     FILE_BASE_REGEX = 'MOD09GA[.]A[\d]{7}[.]'
@@ -30,6 +30,14 @@ class JPLData(requests.Session):
         regex = '(' + '|'.join(tiles) + ').*(' + '|'.join(file_types) + ')$'
         return re.compile(self.FILE_BASE_REGEX + regex, re.IGNORECASE)
 
+    def __get_index_url(self, types, year, day):
+        url = self.TYPES[types]
+        if year < 2015:
+            url += self.ARCHIVE_PATH
+        url += '/' + str(year) + '/' + day + '/'
+
+        return url
+
     def files_for_date_range(self, types, tiles, year, day_range, file_types):
         files = {}
 
@@ -37,7 +45,7 @@ class JPLData(requests.Session):
             print('Parsing download links for day: ' + str(day))
             day = str(day).rjust(3, '0')
 
-            index_dir_url = self.TYPES[types] + str(year) + '/' + day + '/'
+            index_dir_url = self.__get_index_url(types, year, day)
             file_links = BeautifulSoup(
                 self.get(index_dir_url).text, 'html.parser'
             ).find_all(
