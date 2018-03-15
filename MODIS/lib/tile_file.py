@@ -13,7 +13,6 @@ FILTER_TYPE_LIMITS = {
     }
 }
 FILTER_TYPES = FILTER_TYPE_LIMITS.keys()
-NO_DATA_VALUE = -999.0
 
 
 class TileFile:
@@ -92,16 +91,16 @@ class TileFile:
         source_file = gdal.Open(self.filename, gdal.GA_ReadOnly)
 
         target_band = output_file.GetRasterBand(target_band)
-        target_band.SetNoDataValue(NO_DATA_VALUE)
 
         source_values = gdalnumeric.BandReadAsArray(
             source_file.GetRasterBand(source_band),
             buf_type=gdal.GDT_Float32
         )
 
+        no_data_value = target_band.GetNoDataValue()
         # Filter by upper and lower band threshold values
-        source_values[source_values < self.lower_limit] = NO_DATA_VALUE
-        source_values[source_values > self.upper_limit] = NO_DATA_VALUE
+        source_values[source_values < self.lower_limit] = no_data_value
+        source_values[source_values > self.upper_limit] = no_data_value
 
         gdalnumeric.BandWriteArray(
             target_band, source_values, xoff=tw_xoff, yoff=tw_yoff
