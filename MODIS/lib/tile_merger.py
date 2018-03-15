@@ -1,10 +1,14 @@
 import glob
 import os
 
+import gdalnumeric
+import numpy
 from osgeo import gdal
+
 from .tile_file import TileFile
 
 OUTPUT_FORMAT = 'GTiff'
+NO_DATA_VALUE = -999.0
 
 
 class TileMerger:
@@ -13,13 +17,24 @@ class TileMerger:
         self.output_file_name = output_file_name
         self.source_type = source_type
 
+    @staticmethod
+    def __initialize_bands(output_file, bands_to_copy):
+        ysize = output_file.RasterYSize
+        xsize = output_file.RasterXSize
+        for band in bands_to_copy:
+            target_band = output_file.GetRasterBand(band)
+            target_band.SetNoDataValue(NO_DATA_VALUE)
+            gdalnumeric.BandWriteArray(
+                target_band, numpy.full((ysize, xsize), NO_DATA_VALUE)
+            )
+
     def create_mosaic(self):
         if os.path.isfile(self.output_file_name):
             os.remove(self.output_file_name)
 
         file_queue = []
         ulx, uly, lrx, lry = None, None, None, None
-        gdal_driver = gdal.GetDriverByName(OUTPUT_FORMAT)
+        gdal_driver = gdal.GetDriverByName('MEM')
 
         for file in glob.glob(self.source_folder + '*[!_SCA,_rf].tif'):
             file = TileFile(file, self.source_type)
@@ -57,6 +72,8 @@ class TileMerger:
 
         # Copy data from source files into output file.
         bands_to_copy = range(1, bands + 1)
+        self.__initialize_bands(output_file, bands_to_copy)
+
         for file in file_queue:
             print("Processing file %4d of %4d, %6.3f%% completed"
                   % (fi_processed + 1, len(file_queue),
@@ -69,4 +86,4 @@ class TileMerger:
 
             del file
 
-        del output_file
+        return output_file

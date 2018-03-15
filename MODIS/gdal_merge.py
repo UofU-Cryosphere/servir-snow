@@ -1,9 +1,10 @@
-import click
 import datetime
 import os
 import sys
 
+import click
 from osgeo import gdal, osr
+
 from lib import SourceFolder, TileMerger
 
 FILTER_TYPES = {
@@ -16,12 +17,10 @@ FILTER_TYPES = {
         'file_suffix': '_SCA.tif'
     }
 }
-MOSAIC_FILE_SUFFIX = '.tif'
 OUTPUT_FORMAT = 'GTiff'
 
 
-def warp():
-    source = gdal.Open(output_file_name + MOSAIC_FILE_SUFFIX, gdal.GA_ReadOnly)
+def warp(source):
     output_file = output_file_name + FILTER_TYPES[source_type]['file_suffix']
 
     print('Generating projected output file: ' + output_file)
@@ -38,11 +37,10 @@ def warp():
                                       0.125  # same value as in gdalwarp
                                       )
 
-    file = gdal.GetDriverByName(OUTPUT_FORMAT).CreateCopy(output_file, tmp_ds)
+    gdal.GetDriverByName(OUTPUT_FORMAT).CreateCopy(output_file, tmp_ds)
 
     # Release all file handlers
     del tmp_ds
-    del file
     del source
 
 
@@ -112,14 +110,16 @@ def process_folder(**kwargs):
 
             merger = TileMerger(
                 doy_folder,
-                output_file_name + MOSAIC_FILE_SUFFIX,
+                output_file_name,
                 source_type
             ).create_mosaic()
 
             if merger == -1:
                 continue
 
-            warp()
+            warp(merger)
+
+            del merger
 
             print('Done processing source folder: ' + source_path)
 
