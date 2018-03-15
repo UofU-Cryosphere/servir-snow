@@ -43,8 +43,8 @@ class OutputFile:
         )
 
         self.bands = file.RasterCount
-        self.band_type = file.GetRasterBand(1).DataType
         _raster_band = file.GetRasterBand(1)
+        self.band_type = _raster_band.DataType
         self.no_data_value = _raster_band.GetNoDataValue()
         self.band_values = gdalnumeric.BandReadAsArray(_raster_band)
 
