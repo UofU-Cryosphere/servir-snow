@@ -3,7 +3,6 @@ import os
 import sys
 
 import click
-from osgeo import gdal, osr
 
 from lib import SourceFolder, TileMerger
 
@@ -17,31 +16,6 @@ FILTER_TYPES = {
         'file_suffix': '_SCA.tif'
     }
 }
-OUTPUT_FORMAT = 'GTiff'
-
-
-def warp(source):
-    output_file = output_file_name + FILTER_TYPES[source_type]['file_suffix']
-
-    print('Generating projected output file: ' + output_file)
-
-    dst_srs = osr.SpatialReference()
-    dst_srs.ImportFromEPSG(4326)
-
-    # Call AutoCreateWarpedVRT() to fetch default values for target
-    # raster dimensions and geotransform
-    tmp_ds = gdal.AutoCreateWarpedVRT(source,
-                                      None,  # src_wkt : left to default value
-                                      dst_srs.ExportToWkt(),
-                                      gdal.GRA_NearestNeighbour,
-                                      0.125  # same value as in gdalwarp
-                                      )
-
-    gdal.GetDriverByName(OUTPUT_FORMAT).CreateCopy(output_file, tmp_ds)
-
-    # Release all file handlers
-    del tmp_ds
-    del source
 
 
 def validate_types(ctx, _param, value):
@@ -106,7 +80,8 @@ def process_folder(**kwargs):
         for doy_folder in source_folder.get_folders_to_process():
             print('Processing folder: ' + doy_folder)
             file_name = os.path.basename(os.path.dirname(doy_folder))
-            output_file_name = doy_folder + file_name
+            output_file_name = \
+                doy_folder + file_name + FILTER_TYPES[source_type]['file_suffix']
 
             merger = TileMerger(
                 doy_folder,
@@ -117,7 +92,7 @@ def process_folder(**kwargs):
             if merger.create_mosaic() == -1:
                 continue
 
-            warp(merger.output_file)
+            merger.project()
 
             del merger
 

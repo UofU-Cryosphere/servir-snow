@@ -3,11 +3,15 @@ import os
 
 import gdalnumeric
 import numpy
-from osgeo import gdal
+from osgeo import gdal, osr
 
 from .tile_file import TileFile
 
 NO_DATA_VALUE = -999.0
+OUTPUT_FORMAT = 'GTiff'
+
+OUTPUT_PROJECTION = osr.SpatialReference()
+OUTPUT_PROJECTION.ImportFromEPSG(4326)
 
 
 class TileMerger:
@@ -132,3 +136,20 @@ class TileMerger:
 
         # Indicate success
         return 1
+
+    def project(self):
+        print('Generating projected output file: ' + self.output_file_name)
+
+        # Call AutoCreateWarpedVRT() to fetch default values for target
+        # raster dimensions and geotransform
+        tmp_ds = gdal.AutoCreateWarpedVRT(self.output_file,
+                                          None,  # src_wkt : left to default value
+                                          OUTPUT_PROJECTION.ExportToWkt(),
+                                          gdal.GRA_NearestNeighbour,
+                                          0.125  # same value as in gdalwarp
+                                          )
+
+        gdal.GetDriverByName(OUTPUT_FORMAT).CreateCopy(self.output_file_name, tmp_ds)
+
+        # Release all file handlers
+        del tmp_ds
