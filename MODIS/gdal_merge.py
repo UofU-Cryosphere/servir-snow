@@ -112,12 +112,12 @@ def process_folder(**kwargs):
                 doy_folder,
                 output_file_name,
                 source_type
-            ).create_mosaic()
+            )
 
-            if merger == -1:
+            if merger.create_mosaic() == -1:
                 continue
 
-            warp(merger)
+            warp(merger.output_file)
 
             del merger
 
