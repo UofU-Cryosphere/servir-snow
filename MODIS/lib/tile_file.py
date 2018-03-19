@@ -21,6 +21,7 @@ class TileFile:
     into a target file.
 
     """
+    GLOB = '*[!_SCA,_rf].tif'
 
     def __init__(self, filename, source_type):
         """
