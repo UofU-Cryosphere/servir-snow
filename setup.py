@@ -9,5 +9,7 @@ setup(
     author_email='j.meyer@utah.edu',
     description='Library with helper functions and scripts '
                 'for GeoTiff processing',
-    install_requires=['gdal', 'numpy', 'click', 'beautifulsoup4', 'requests']
+    install_requires=[
+        'click', 'beautifulsoup4', 'gdal', 'numpy',  'pyproj', 'requests'
+    ]
 )
