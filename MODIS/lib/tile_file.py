@@ -1,6 +1,6 @@
 # Trimmed down version of gdal's distributed gdal_merge.py helper script
 
-from osgeo import gdal, gdalnumeric
+from osgeo import gdal, gdalconst, gdalnumeric
 
 FILTER_TYPE_LIMITS = {
     'forcing': {
@@ -32,7 +32,7 @@ class TileFile:
                        lower limit to filter band values.
 
         """
-        tile_file = gdal.Open(filename)
+        tile_file = gdal.Open(filename, gdalconst.GA_ReadOnly)
 
         self.filename = filename
         self.bands = tile_file.RasterCount
@@ -89,7 +89,7 @@ class TileFile:
         tw_xoff = int((tgw_ulx - t_ulx) / t_pixel_width + 0.1)
         tw_yoff = int((tgw_uly - t_uly) / t_pixel_height + 0.1)
 
-        source_file = gdal.Open(self.filename, gdal.GA_ReadOnly)
+        source_file = gdal.Open(self.filename, gdalconst.GA_ReadOnly)
 
         target_band = output_file.GetRasterBand(target_band)
 
