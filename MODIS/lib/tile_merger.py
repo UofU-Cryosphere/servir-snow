@@ -140,16 +140,4 @@ class TileMerger:
     def project(self):
         print('Generating projected output file: ' + self.output_file_name)
 
-        # Call AutoCreateWarpedVRT() to fetch default values for target
-        # raster dimensions and geotransform
-        tmp_ds = gdal.AutoCreateWarpedVRT(self.output_file,
-                                          None,  # src_wkt : left to default value
-                                          OUTPUT_PROJECTION.ExportToWkt(),
-                                          gdal.GRA_NearestNeighbour,
-                                          0.125  # same value as in gdalwarp
-                                          )
-
-        gdal.GetDriverByName(OUTPUT_FORMAT).CreateCopy(self.output_file_name, tmp_ds)
-
-        # Release all file handlers
-        del tmp_ds
+        gdal.Warp(self.output_file_name, self.output_file, dstSRS='EPSG:4326')
