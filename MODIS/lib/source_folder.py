@@ -1,7 +1,7 @@
-import os
 import fnmatch
-import shutil
 import glob
+import os
+import shutil
 
 
 class SourceFolder:
@@ -28,7 +28,7 @@ class SourceFolder:
     def __move_files_to_folder(self, file):
         for doy in self.new_days:
             source_folder_for_file = \
-                self.__ensure_slash(self.source_folder + doy)
+                os.path.join(self.source_folder, doy)
 
             self.ensure_source_folder(source_folder_for_file)
 

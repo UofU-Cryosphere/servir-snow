@@ -1,14 +1,15 @@
 #!/usr/bin/python
 
 import datetime
-import click
 import os
-import requests
 import re
-
 from multiprocessing import Pool
-from lib.download_utils import *
+
+import click
+import requests
 from bs4 import BeautifulSoup
+
+from lib.download_utils import download_file
 
 
 class JPLData(requests.Session):
@@ -83,7 +84,7 @@ def parse_year(_ctx, _param, value):
     if value:
         return range(value, value + 1)
     else:
-        return range(2000, datetime.today().year + 1)
+        return range(2000, datetime.date.today().year + 1)
 
 
 @click.command()

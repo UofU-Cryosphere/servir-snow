@@ -3,13 +3,6 @@ import os
 from datetime import date, datetime, timedelta
 
 
-def ensure_slash(value):
-    if not value.endswith('/'):
-        return value + '/'
-    else:
-        return value
-
-
 def ensure_folder(folder):
     if not (os.path.isdir(folder)):
         os.mkdir(folder)
@@ -34,7 +27,7 @@ def dates_in_range(year, from_day, to_day):
 
 def download_file(session, name, url, download_folder):
     file_size = int(session.head(url).headers['Content-Length'])
-    file_name = ensure_slash(download_folder) + name
+    file_name = os.path.join(download_folder, name)
 
     if not os.path.isfile(file_name) or os.path.getsize(file_name) != file_size:
         response = session.get(url, stream=True)

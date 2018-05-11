@@ -1,10 +1,12 @@
 #!/usr/bin/python
 
+import os
+from multiprocessing import Pool
+
 import click
 
-from multiprocessing import Pool
 from lib import EarthData
-from lib.download_utils import *
+from lib.download_utils import dates_in_range, download_file, ensure_folder
 
 
 @click.command()
@@ -36,7 +38,7 @@ def data_download(**kwargs):
 
     dates = dates_in_range(kwargs['year'], kwargs['day_from'], kwargs['day_to'])
     download_folder = ensure_folder(
-        kwargs['download_folder'] + '/' + str(kwargs['year'])
+        os.path.join(kwargs['download_folder'],  str(kwargs['year']))
     )
     file_list = session.files_for_date_range(dates)
 
