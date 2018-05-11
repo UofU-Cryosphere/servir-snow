@@ -1,6 +1,8 @@
 #!/usr/bin/python
 
+import datetime
 import click
+import os
 import requests
 import re
 
@@ -81,7 +83,7 @@ def parse_year(_ctx, _param, value):
     if value:
         return range(value, value + 1)
     else:
-        return range(2000, datetime.date.today().year + 1)
+        return range(2000, datetime.today().year + 1)
 
 
 @click.command()
@@ -128,9 +130,8 @@ def data_download(**kwargs):
     days = range(kwargs['day_from'], kwargs['day_to'] + 1)
 
     for year in kwargs['year']:
-        download_folder = ensure_folder(
-            ensure_slash(kwargs['download_folder']) + str(year)
-        )
+        download_folder = os.path.join(kwargs['download_folder'], str(year))
+
         print('Downloading files: ' + ', '.join(kwargs['file_names']) +
               ' for tiles: ' + ', '.join(kwargs['tiles']) +
               ' in day range ' + str(kwargs['day_from']) +
