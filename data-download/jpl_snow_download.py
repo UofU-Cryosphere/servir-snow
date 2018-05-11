@@ -84,7 +84,7 @@ def parse_year(_ctx, _param, value):
     if value:
         return range(value, value + 1)
     else:
-        return range(2000, datetime.today().year + 1)
+        return range(2000, datetime.date.today().year + 1)
 
 
 @click.command()
