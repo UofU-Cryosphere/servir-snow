@@ -8,13 +8,14 @@ from osgeo import gdal, osr
 from .tile_file import TileFile
 
 NO_DATA_VALUE = -999.0
-OUTPUT_FORMAT = 'GTiff'
 
 OUTPUT_PROJECTION = osr.SpatialReference()
 OUTPUT_PROJECTION.ImportFromEPSG(4326)
 
 
 class TileMerger:
+    CREATE_OPTIONS = ["COMPRESS=LZW", "TILED=YES", "BIGTIFF=IF_SAFER"]
+
     def __init__(self, source_folder, output_file_name, source_type):
         self.source_folder = source_folder
         self.output_file_name = output_file_name
@@ -140,4 +141,7 @@ class TileMerger:
     def project(self):
         print('Generating projected output file: ' + self.output_file_name)
 
-        gdal.Warp(self.output_file_name, self.output_file, dstSRS='EPSG:4326')
+        file = gdal.Warp('', self.output_file, dstSRS='EPSG:4326', format='MEM')
+        gdal.Translate(
+            self.output_file_name, file, creationOptions=self.CREATE_OPTIONS
+        )
