@@ -8,7 +8,6 @@ from osgeo import gdal, osr
 from .tile_file import TileFile
 
 NO_DATA_VALUE = -999.0
-OUTPUT_FORMAT = 'GTiff'
 
 OUTPUT_PROJECTION = osr.SpatialReference()
 OUTPUT_PROJECTION.ImportFromEPSG(4326)
