@@ -27,14 +27,13 @@ class SourceFolder:
 
     def __move_files_to_folder(self, file):
         for doy in self.new_days:
-            source_folder_for_file = \
-                os.path.join(self.source_folder, doy)
+            source_folder_for_file = os.path.join(self.source_folder, doy)
 
             self.ensure_source_folder(source_folder_for_file)
 
             if fnmatch.fnmatch(file, '*' + doy + '*'):
+                self.check_duplicate(file, source_folder_for_file)
                 shutil.move(file, source_folder_for_file)
-                return
 
     @staticmethod
     def doy_from_file_name(filename):
@@ -44,6 +43,14 @@ class SourceFolder:
     def ensure_source_folder(folder):
         if not os.path.exists(folder):
             os.mkdir(folder)
+
+    @staticmethod
+    def check_duplicate(file, source_folder_for_file):
+        duplicate = os.path.join(
+            source_folder_for_file, os.path.basename(file)
+        )
+        if os.path.exists(duplicate):
+            os.remove(duplicate)
 
     @staticmethod
     def __ensure_slash(value):
