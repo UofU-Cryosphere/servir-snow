@@ -9,7 +9,7 @@ class SourceFolder:
     FOLDER_NAME_PATTERN = '20[0,1,2][0-9]*/'
 
     def __init__(self, source_folder):
-        self.source_folder = self.__ensure_slash(source_folder)
+        self.source_folder = os.path.join(source_folder, '')
         self.files = glob.glob(self.source_folder + self.SOURCE_FILE_TYPES)
         self.new_days = sorted(self.__get_new_days())
 
@@ -51,10 +51,3 @@ class SourceFolder:
         )
         if os.path.exists(duplicate):
             os.remove(duplicate)
-
-    @staticmethod
-    def __ensure_slash(value):
-        if not value.endswith('/'):
-            return value + '/'
-        else:
-            return value
