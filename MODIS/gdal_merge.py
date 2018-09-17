@@ -51,8 +51,7 @@ def parse_year(_ctx, _param, value):
               callback=parse_year,
               help='Optional - Process specific year')
 @click.option('--scan-folder',
-              type=bool,
-              default=False,
+              is_flag=True,
               help='Scan the source folder for newly downloaded files')
 def process_folder(**kwargs):
     global output_file_name
