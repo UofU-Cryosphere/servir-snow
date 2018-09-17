@@ -20,10 +20,7 @@ class SourceFolder:
         return glob.glob(self.source_folder + self.FOLDER_NAME_PATTERN)
 
     def scan_for_new_files(self):
-        [
-            self.__move_files_to_folder(file)
-            for file in self.files
-        ]
+        [self.__move_files_to_folder(file) for file in self.files]
 
     def __move_files_to_folder(self, file):
         for doy in self.new_days:
@@ -46,8 +43,6 @@ class SourceFolder:
 
     @staticmethod
     def check_duplicate(file, source_folder_for_file):
-        duplicate = os.path.join(
-            source_folder_for_file, os.path.basename(file)
-        )
+        duplicate = os.path.join(source_folder_for_file, os.path.basename(file))
         if os.path.exists(duplicate):
             os.remove(duplicate)
