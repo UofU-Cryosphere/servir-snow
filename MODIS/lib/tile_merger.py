@@ -15,10 +15,13 @@ OUTPUT_PROJECTION.ImportFromEPSG(4326)
 
 class TileMerger:
     CREATE_OPTIONS = ["COMPRESS=LZW", "TILED=YES", "BIGTIFF=IF_SAFER"]
+    FILE_SUFFIX = {
+        'forcing': '_rf.tif',
+        'fraction': '_SCA.tif',
+    }
 
-    def __init__(self, source_folder, output_file_name, source_type):
+    def __init__(self, source_folder, source_type):
         self.source_folder = source_folder
-        self.output_file_name = output_file_name
         self.output_file = None
         self.source_type = source_type
         self.file_queue = []
@@ -28,6 +31,14 @@ class TileMerger:
             'lrx': [],
             'lry': [],
         }
+
+    @property
+    def output_file_name(self):
+        return os.path.join(
+            self.source_folder,
+            os.path.basename(os.path.dirname(self.source_folder)) \
+            + self.FILE_SUFFIX[self.source_type]
+        )
 
     @staticmethod
     def __calculate_pixel_size(right, left, width):
