@@ -33,18 +33,17 @@ class TileMerger:
     def __calculate_pixel_size(right, left, width):
         return int((right - left) / width + 0.5)
 
-    @staticmethod
-    def __initialize_bands(output_file, bands_to_copy):
+    def initialize_bands(self, bands_to_copy):
         na_values = numpy.full(
-            (output_file.RasterYSize, output_file.RasterXSize),
-            NO_DATA_VALUE
+            (self.output_file.RasterYSize, self.output_file.RasterXSize),
+            fill_value=NO_DATA_VALUE,
         )
+
         for band in bands_to_copy:
-            target_band = output_file.GetRasterBand(band)
+            target_band = self.output_file.GetRasterBand(band)
             target_band.SetNoDataValue(NO_DATA_VALUE)
-            gdalnumeric.BandWriteArray(
-                target_band, na_values
-            )
+            gdalnumeric.BandWriteArray(target_band, na_values)
+
         del na_values
 
     def __add_files_to_queue(self):
@@ -120,7 +119,7 @@ class TileMerger:
         files_processed = 0
 
         bands_to_copy = range(1, self.__number_of_bands() + 1)
-        self.__initialize_bands(self.output_file, bands_to_copy)
+        self.initialize_bands(bands_to_copy)
 
         # Copy data from source files into output file.
         for file in self.file_queue:

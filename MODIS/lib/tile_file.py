@@ -95,7 +95,7 @@ class TileFile:
 
         source_values = gdalnumeric.BandReadAsArray(
             source_file.GetRasterBand(source_band),
-            buf_type=gdal.GDT_Float32
+            buf_type=gdal.GDT_Float32,
         )
 
         no_data_value = target_band.GetNoDataValue()
@@ -106,6 +106,8 @@ class TileFile:
         gdalnumeric.BandWriteArray(
             target_band, source_values, xoff=tw_xoff, yoff=tw_yoff
         )
+
+        target_band.FlushCache()
 
         del source_values
         del source_file
