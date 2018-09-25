@@ -1,6 +1,5 @@
 #!/usr/bin/python
 
-import datetime
 import os
 from multiprocessing import Pool
 
@@ -9,6 +8,7 @@ import click
 from lib import JPLData
 from lib import SourceFolder
 from lib.download_utils import download_file
+from modis.script_helpers import parse_year
 
 
 def to_array(_ctx, _param, value):
@@ -26,13 +26,6 @@ def validate_type(ctx, _param, value):
 def get_from_jpl(username, password, name, url, download_folder):
     session = JPLData(username, password)
     return download_file(session, name, url, download_folder)
-
-
-def parse_year(_ctx, _param, value):
-    if value:
-        return range(value, value + 1)
-    else:
-        return range(2000, datetime.date.today().year + 1)
 
 
 @click.command()
