@@ -1,17 +1,18 @@
-import gdal_merge
 import shutil
 
-from .constants import *
 from click.testing import CliRunner
-from gdal_merge import FILTER_TYPES
 from osgeo import gdal, gdalnumeric, osr
+
+import gdal_merge
+from lib import SourceFolder, TileMerger
+from .constants import *
 
 
 def get_source_folder(name):
     return os.path.join(
         TEST_SOURCE_FOLDER,
         RUN_YEAR,
-        FILTER_TYPES[name]['source_folder'],
+        SourceFolder.FOLDER_TYPES[name],
         RUN_YEAR + DAY_OF_YEAR
     )
 
@@ -63,4 +64,4 @@ class OutputFile:
 
     @classmethod
     def get_file_name(cls, source_type):
-        return RUN_YEAR + DAY_OF_YEAR + FILTER_TYPES[source_type]['file_suffix']
+        return RUN_YEAR + DAY_OF_YEAR + TileMerger.FILE_SUFFIX[source_type]
