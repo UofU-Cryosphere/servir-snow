@@ -66,8 +66,6 @@ def get_from_jpl(username, password, name, url, download_folder):
               help='Pattern of file to look for')
 def data_download(**kwargs):
     session = JPLData(kwargs['username'], kwargs['password'])
-    # To authenticate for the session
-    session.get_index(kwargs['source_type'])
 
     days = range(kwargs['day_from'], kwargs['day_to'] + 1)
 

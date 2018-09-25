@@ -18,9 +18,6 @@ class JPLData(requests.Session):
         super(JPLData, self).__init__()
         self.auth = requests.auth.HTTPDigestAuth(username, password)
 
-    def get_index(self, source):
-        self.get(self.TYPES[source])
-
     def requested_files_regex(self, tiles, file_types):
         regex = '(' + '|'.join(tiles) + ').*(' + '|'.join(file_types) + ')$'
         return re.compile(self.FILE_BASE_REGEX + regex, re.IGNORECASE)
