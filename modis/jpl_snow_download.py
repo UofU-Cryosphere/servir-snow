@@ -23,9 +23,8 @@ def validate_type(ctx, _param, value):
         return value
 
 
-def get_from_jpl(username, password, name, url, download_folder):
-    session = JPLData(username, password)
-    return download_file(session, name, url, download_folder)
+def get_from_jpl(kwargs, name, url, download_folder):
+    return download_file(JPLData(**kwargs), name, url, download_folder)
 
 
 @click.command()
@@ -65,7 +64,7 @@ def get_from_jpl(username, password, name, url, download_folder):
               callback=to_array,
               help='Pattern of file to look for')
 def data_download(**kwargs):
-    session = JPLData(kwargs['username'], kwargs['password'])
+    session = JPLData(**kwargs)
 
     days = range(kwargs['day_from'], kwargs['day_to'] + 1)
 
@@ -89,21 +88,17 @@ def data_download(**kwargs):
               ' to ' + str(kwargs['day_to']))
 
         file_list = session.files_for_date_range(
-            kwargs['source_type'],
-            kwargs['tiles'],
-            year,
-            days,
-            kwargs['file_names'],
+            kwargs['tiles'], year, days, kwargs['file_names'],
         )
 
         print('Found ' + str(len(file_list)) + ' files to download')
+
         p = Pool(4)
         p_res = [
-            p.apply_async(
-                get_from_jpl,
-                (kwargs['username'], kwargs['password'], name, url, download_folder)
-            ) for name, url in file_list.items()
+            p.apply_async(get_from_jpl, (kwargs, name, url, download_folder))
+            for name, url in file_list.items()
         ]
+
         [res.get() for res in p_res]
 
 

@@ -14,30 +14,37 @@ class JPLData(requests.Session):
 
     FILE_BASE_REGEX = 'MOD09GA[.]A[\d]{7}[.]'
 
-    def __init__(self, username, password):
+    def __init__(self, **kwargs):
         super(JPLData, self).__init__()
-        self.auth = requests.auth.HTTPDigestAuth(username, password)
+        self.auth = requests.auth.HTTPDigestAuth(
+            kwargs['username'], kwargs['password']
+        )
+        self._source_type = kwargs['source_type']
+
+    @property
+    def source_type(self):
+        return self._source_type
 
     def requested_files_regex(self, tiles, file_types):
         regex = '(' + '|'.join(tiles) + ').*(' + '|'.join(file_types) + ')$'
         return re.compile(self.FILE_BASE_REGEX + regex, re.IGNORECASE)
 
-    def __get_index_url(self, types, year, day):
-        url = self.TYPES[types]
+    def __get_index_url(self, year, day):
+        url = self.TYPES[self.source_type]
         if year < 2015:
             url += self.ARCHIVE_PATH
         url += '/' + str(year) + '/' + day + '/'
 
         return url
 
-    def files_for_date_range(self, types, tiles, year, day_range, file_types):
+    def files_for_date_range(self, tiles, year, day_range, file_types):
         files = {}
 
         for day in day_range:
             print('Parsing download links for day: ' + str(day))
             day = str(day).rjust(3, '0')
 
-            index_dir_url = self.__get_index_url(types, year, day)
+            index_dir_url = self.__get_index_url(year, day)
             file_links = BeautifulSoup(
                 self.get(index_dir_url).text, 'html.parser'
             ).find_all(
