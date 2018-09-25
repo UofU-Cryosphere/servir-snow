@@ -1,9 +1,8 @@
 import numpy
 import pytest
-
-from .constants import RUN_YEAR, DAY_OF_YEAR
-from .create_test_images import TILES, PROJECTION
 from osgeo import gdal
+
+from tests.setup_scripts.create_test_images import TILES, PROJECTION
 
 NO_DATA_VALUE = -999.0
 
@@ -19,7 +18,8 @@ def tile_raster_band_values(upper, lower):
 @pytest.mark.runner_args(source_type='forcing')
 class TestForcing:
     def test_file_name(self):
-        assert self.out_file.filename == RUN_YEAR + DAY_OF_YEAR + '_rf.tif'
+        filename = self.run_year + self.day_of_year + '_rf.tif'
+        assert self.out_file.filename == filename
 
     def test_raster_geo_transform(self):
         assert self.out_file.ulx == 0
@@ -58,7 +58,8 @@ class TestForcing:
 @pytest.mark.runner_args(source_type='fraction')
 class TestFraction:
     def test_file_name(self):
-        assert self.out_file.filename == RUN_YEAR + DAY_OF_YEAR + '_SCA.tif'
+        filename = self.run_year + self.day_of_year + '_SCA.tif'
+        assert self.out_file.filename == filename
 
     def test_raster_geo_transform(self):
         assert self.out_file.ulx == 0

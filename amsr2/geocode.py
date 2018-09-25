@@ -1,12 +1,9 @@
-import click
 import glob
-import tables
-import os
-import sys
 
-from osgeo.gdalnumeric import *
-
+import click
 import nsidc
+import tables
+from osgeo.gdalnumeric import *
 
 # pixel spatial resolution in meters
 SPAT_RES = 25000

@@ -1,9 +1,8 @@
 import glob
 import os
 
-import gdalnumeric
 import numpy
-from osgeo import gdal, osr
+from osgeo import gdal, gdalnumeric, osr
 
 from .tile_file import TileFile
 

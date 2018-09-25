@@ -1,7 +1,7 @@
-import numpy
 import os
 import sys
 
+import numpy
 from osgeo import gdal, gdalnumeric, osr
 
 # Utility script to setup tests sources.
@@ -71,7 +71,7 @@ def create_images():
         output_file.SetProjection(PROJECTION.ExportToWkt())
 
         target_band = output_file.GetRasterBand(tile_bands)
-        target_band.SetNoDataValue(2550) # From MODSCAG spec
+        target_band.SetNoDataValue(2550)  # From MODSCAG spec
         gdalnumeric.BandWriteArray(target_band, tile_values)
 
         del target_band

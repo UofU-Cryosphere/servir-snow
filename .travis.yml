@@ -13,6 +13,6 @@ install:
 before_script:
   - conda env list
   - source activate snow_rs
-  - cd $TRAVIS_BUILD_DIR/MODIS
+  - cd $TRAVIS_BUILD_DIR/
 
 script: pytest
