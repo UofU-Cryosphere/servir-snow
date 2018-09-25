@@ -1,8 +1,9 @@
 #!/usr/bin/python
 
+from multiprocessing import Pool
+
 import click
 
-from multiprocessing import Pool
 from lib import EarthData
 from lib.download_utils import download_file
 
