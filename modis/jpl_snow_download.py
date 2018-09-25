@@ -93,10 +93,9 @@ def data_download(**kwargs):
             os.makedirs(download_folder)
 
         print('Downloading files: ' + ', '.join(kwargs['file_names']) +
-              ' for tiles: ' + ', '.join(kwargs['tiles']) +
-              ' in day range ' + str(kwargs['day_from']) +
-              ' to ' + str(kwargs['day_to']) +
-              ' for year ' + str(year))
+              '\n for tiles: ' + ', '.join(kwargs['tiles']) +
+              '\n in day range ' + str(kwargs['day_from']) +
+              ' to ' + str(kwargs['day_to']))
 
         file_list = session.files_for_date_range(
             kwargs['source_type'],
