@@ -16,8 +16,8 @@ class JPLData(requests.Session):
     BASE_URL = 'https://snow-data.jpl.nasa.gov'
     ARCHIVE_PATH = '-historic'
     TYPES = {
-        'MODSCAG': BASE_URL + '/modscag',
-        'MODDRFS': BASE_URL + '/moddrfs'
+        'fraction': BASE_URL + '/modscag',
+        'forcing': BASE_URL + '/moddrfs'
     }
 
     FILE_BASE_REGEX = 'MOD09GA[.]A[\d]{7}[.]'
@@ -67,7 +67,7 @@ def to_array(_ctx, _param, value):
     return value.split(',')
 
 
-def validate_types(ctx, _param, value):
+def validate_type(ctx, _param, value):
     if value not in JPLData.TYPES:
         print('Invalid data type')
         ctx.abort()
@@ -111,10 +111,10 @@ def parse_year(_ctx, _param, value):
               prompt=True,
               type=int,
               help='The ending day to download data from')
-@click.option('--types',
-              prompt='The type of data - MODSCAG or MODDRFS',
-              callback=validate_types,
-              help='The type of data - MODSCAG or MODDRFS')
+@click.option('--source-type',
+              prompt='The type of data - fraction or forcing',
+              callback=validate_type,
+              help='The type of data - fraction or forcing')
 @click.option('--tiles',
               prompt=True,
               callback=to_array,
@@ -126,7 +126,7 @@ def parse_year(_ctx, _param, value):
 def data_download(**kwargs):
     session = JPLData(kwargs['username'], kwargs['password'])
     # To authenticate for the session
-    session.get_index(kwargs['types'])
+    session.get_index(kwargs['source_type'])
 
     days = range(kwargs['day_from'], kwargs['day_to'] + 1)
 
@@ -140,7 +140,7 @@ def data_download(**kwargs):
               ' for year ' + str(year))
 
         file_list = session.files_for_date_range(
-            kwargs['types'],
+            kwargs['source_type'],
             kwargs['tiles'],
             year,
             days,
