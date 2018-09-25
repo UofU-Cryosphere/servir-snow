@@ -7,6 +7,7 @@ from multiprocessing import Pool
 import click
 
 from lib import JPLData
+from lib import SourceFolder
 from lib.download_utils import download_file
 
 
@@ -77,8 +78,19 @@ def data_download(**kwargs):
 
     days = range(kwargs['day_from'], kwargs['day_to'] + 1)
 
+    source_folder = SourceFolder(
+        base_path=kwargs['download_folder'],
+        source_type=kwargs['source_type']
+    )
+
     for year in kwargs['year']:
-        download_folder = os.path.join(kwargs['download_folder'], str(year))
+        print('Processing year: ' + str(year))
+        source_folder.year = year
+
+        download_folder = source_folder.type_path
+
+        if not os.path.exists(download_folder):
+            os.makedirs(download_folder)
 
         print('Downloading files: ' + ', '.join(kwargs['file_names']) +
               ' for tiles: ' + ', '.join(kwargs['tiles']) +
