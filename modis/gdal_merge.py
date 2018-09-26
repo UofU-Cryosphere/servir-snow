@@ -4,7 +4,7 @@ import sys
 import click
 
 from lib import SourceFolder, TileMerger
-from .script_helpers import parse_year, validate_types
+from modis.script_helpers import parse_year, validate_types
 
 
 @click.command()
