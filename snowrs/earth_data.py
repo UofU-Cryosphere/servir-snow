@@ -15,8 +15,8 @@ class EarthData(requests.Session):
     }
 
     FILE_REGEX = {
-        'AMSR2': re.compile('AMSR_2_L3_DailySnow_.*'),
-        'AMSRE': re.compile('AMSR_E_L3_DailySnow_V[\d]{2}_.*[.]hdf$'),
+        'AMSR2': re.compile(r'AMSR_2_L3_DailySnow_.*'),
+        'AMSRE': re.compile(r'AMSR_E_L3_DailySnow_V[\d]{2}_.*[.]hdf$'),
     }
 
     def __init__(self, username, password, source):

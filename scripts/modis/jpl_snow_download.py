@@ -5,10 +5,8 @@ from multiprocessing import Pool
 
 import click
 
-from lib import JPLData
-from lib import SourceFolder
-from lib.download_utils import download_file
-from modis.script_helpers import parse_year
+from snowrs import JPLData, SourceFolder
+from snowrs.script_helpers import download_file, parse_year
 
 
 def to_array(_ctx, _param, value):

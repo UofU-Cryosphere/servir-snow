@@ -12,7 +12,7 @@ class JPLData(requests.Session):
         'forcing': BASE_URL + '/moddrfs'
     }
 
-    FILE_BASE_REGEX = 'MOD09GA[.]A[\d]{7}[.]'
+    FILE_BASE_REGEX = r'MOD09GA[.]A[\d]{7}[.]'
 
     def __init__(self, **kwargs):
         super(JPLData, self).__init__()

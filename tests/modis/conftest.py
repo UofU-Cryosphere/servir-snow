@@ -6,9 +6,8 @@ import pytest
 from click.testing import CliRunner
 from osgeo import gdal, osr, gdalnumeric
 
-from lib import SourceFolder
-from lib import TileMerger
-from modis.gdal_merge import process_folder
+from scripts.modis.gdal_merge import process_folder
+from snowrs import SourceFolder, TileMerger
 
 TEST_ROOT = os.path.dirname(os.path.abspath(__file__))
 TEST_TIFFS_DIR = os.path.join(TEST_ROOT, 'source_tiffs')
