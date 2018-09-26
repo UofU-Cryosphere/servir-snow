@@ -5,8 +5,16 @@ from multiprocessing import Pool
 
 import click
 
-from lib import EarthData
-from lib.download_utils import dates_in_range, download_file, ensure_folder
+from snowrs import EarthData
+from snowrs.script_helpers import dates_in_range, download_file
+
+
+# TODO - Remove me
+def ensure_folder(folder):
+    if not (os.path.isdir(folder)):
+        os.mkdir(folder)
+
+    return folder
 
 
 @click.command()
@@ -38,7 +46,7 @@ def data_download(**kwargs):
 
     dates = dates_in_range(kwargs['year'], kwargs['day_from'], kwargs['day_to'])
     download_folder = ensure_folder(
-        os.path.join(kwargs['download_folder'],  str(kwargs['year']))
+        os.path.join(kwargs['download_folder'], str(kwargs['year']))
     )
     file_list = session.files_for_date_range(dates)
 

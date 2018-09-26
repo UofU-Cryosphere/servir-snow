@@ -1,10 +1,12 @@
+#!/usr/bin/python
+
 import os
 import sys
 
 import click
 
-from lib import SourceFolder, TileMerger
-from modis.script_helpers import parse_year, validate_types
+from snowrs import SourceFolder, TileMerger
+from snowrs.script_helpers import parse_year, validate_types
 
 
 @click.command()

@@ -4,8 +4,8 @@ from multiprocessing import Pool
 
 import click
 
-from lib import EarthData
-from lib.download_utils import download_file
+from snowrs import EarthData
+from snowrs.script_helpers import download_file
 
 
 @click.command()
