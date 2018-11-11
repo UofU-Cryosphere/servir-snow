@@ -5,7 +5,7 @@ from snowrs import SourceFolder
 
 
 def validate_types(ctx, _param, value):
-    if not SourceFolder.valid_source_type(value):
+    if value not in SourceFolder.FOLDER_TYPES:
         print('Invalid source data type\n' +
               'Possible options:\n' +
               ' * forcing\n' +

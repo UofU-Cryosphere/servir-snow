@@ -27,8 +27,9 @@ from snowrs.script_helpers import parse_year, validate_types
               is_flag=True,
               help='Scan the source folder for newly downloaded files')
 def process_folder(**kwargs):
-    source_type = kwargs['source_type']
-    source_folder = SourceFolder(kwargs['source_folder'], source_type)
+    source_folder = SourceFolder(
+        kwargs['source_folder'], source_type=kwargs['source_type']
+    )
 
     for year in kwargs['year']:
         print('Processing year: ' + str(year))
@@ -46,10 +47,7 @@ def process_folder(**kwargs):
         for doy_folder in source_folder.doy_folders():
             print('  Processing folder: ' + doy_folder)
 
-            merger = TileMerger(
-                doy_folder,
-                source_type
-            )
+            merger = TileMerger(doy_folder, kwargs['source_type'])
 
             if merger.create_mosaic() == -1:
                 continue
