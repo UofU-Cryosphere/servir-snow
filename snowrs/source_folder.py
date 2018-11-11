@@ -5,18 +5,22 @@ import shutil
 
 
 class SourceFolder:
-    SOURCE_FILE_TYPES = '*.tif'
+    SOURCE_FILE_TYPE = '*.tif'
     FOLDER_NAME_PATTERN = '20[0,1,2][0-9]*/'
 
     FOLDER_TYPES = {
         'forcing': 'forcing',
         'fraction': 'snow_fraction',
+        '': ''
     }
 
-    def __init__(self, base_path, source_type):
-        self.type = source_type
+    def __init__(self, base_path, **kwargs):
+        self.type = kwargs.get('source_type', '')
         self.base_path = base_path
         self.year = None
+        self.source_file_type = kwargs.get(
+            'source_file_type', self.SOURCE_FILE_TYPE
+        )
 
     @property
     def type(self):
@@ -24,12 +28,16 @@ class SourceFolder:
 
     @type.setter
     def type(self, value):
-        if self.valid_source_type(value):
+        if value in SourceFolder.FOLDER_TYPES:
             self._type = value
 
-    @staticmethod
-    def valid_source_type(source_type):
-        return True if source_type in SourceFolder.FOLDER_TYPES else False
+    @property
+    def source_file_type(self):
+        return self._source_file_type
+
+    @source_file_type.setter
+    def source_file_type(self, value):
+        self._source_file_type = value
 
     @property
     def base_path(self):
@@ -49,7 +57,7 @@ class SourceFolder:
 
     @property
     def files(self):
-        return glob.glob(self.type_path + self.SOURCE_FILE_TYPES)
+        return glob.glob(self.type_path + self.source_file_type)
 
     @property
     def type_path(self):
