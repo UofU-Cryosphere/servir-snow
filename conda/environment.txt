@@ -9,5 +9,3 @@ dependencies:
   - beautifulsoup4
   - requests
   - pytest
-  - pip:
-    - numexpr
