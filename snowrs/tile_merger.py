@@ -49,6 +49,7 @@ class TileMerger:
         self.source_folder = source_folder
         self.output_file = None
         self.mosaic_vrt = None
+        self._mosaic_vrt_file = None
         self.source_type = source_type
         self.file_queue = glob.glob(source_folder + self.SOURCE_FILE_GLOB)
         self.lower_limit = self.FILTER_TYPE_LIMITS[source_type]['lower']
@@ -62,13 +63,20 @@ class TileMerger:
             + self.FILE_SUFFIX[self.source_type]
         )
 
+    @property
+    def mosaic_vrt_file(self):
+        if self._mosaic_vrt_file is None:
+            self._mosaic_vrt_file = os.path.join(
+                self.source_folder, 'mosaic.vrt'
+            )
+        return self._mosaic_vrt_file
+
     def __build_mosaic_vrt(self):
-        file_name = os.path.join(self.source_folder, 'mosaic.vrt')
         vrt_options = gdal.BuildVRTOptions(
             outputSRS=self.SOURCE_FILE_PROJECTION,
         )
         self.mosaic_vrt = gdal.BuildVRT(
-            file_name, self.file_queue, options=vrt_options
+            self.mosaic_vrt_file, self.file_queue, options=vrt_options
         )
 
     def __init_output_file(self):
@@ -113,9 +121,8 @@ class TileMerger:
         self.__copy_band_data()
 
         # Cleanup
-        vrt_file_name = self.mosaic_vrt.GetDescription()
         del self.mosaic_vrt
-        os.remove(vrt_file_name)
+        os.remove(self.mosaic_vrt_file)
 
         # Indicate success
         return 1
