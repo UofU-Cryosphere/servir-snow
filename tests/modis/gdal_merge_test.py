@@ -1,18 +1,14 @@
-import numpy
 import pytest
+from numpy.testing import assert_equal
 from osgeo import gdal
 
-from tests.setup_scripts.create_test_images import TILES, PROJECTION
+from tests.setup_scripts.create_test_images import TILE_VALUES, PROJECTION
 
 NO_DATA_VALUE = -999.0
 
 
 def tile_raster_band_values(upper, lower):
-    values = numpy.array([*TILES.values()])
-    values = values[values <= upper]
-    values = values[values >= lower]
-
-    return values
+    return TILE_VALUES[(TILE_VALUES >= lower) & (TILE_VALUES <= upper)]
 
 
 @pytest.mark.runner_args(source_type='forcing')
@@ -21,6 +17,7 @@ class TestForcing:
         filename = self.run_year + self.day_of_year + '_rf.tif'
         assert self.out_file.filename == filename
 
+    @pytest.mark.skip(reason="TODO - Create test files with MODIS projection")
     def test_raster_geo_transform(self):
         assert self.out_file.ulx == 0
         assert self.out_file.uly == 6
@@ -43,16 +40,24 @@ class TestForcing:
         assert self.out_file.band_values.max() == 400
 
     def test_raster_band_filter_lower_limit(self):
-        lower_limit = self.out_file.band_values[self.out_file.band_values < 0]
-        lower_limit = lower_limit[lower_limit != NO_DATA_VALUE]
-        assert len(lower_limit) == 0
+        data_values = self.out_file.band_values[
+            self.out_file.band_values != NO_DATA_VALUE
+        ]
+        assert data_values.min() == 0
 
+    def test_raster_band_no_data_value(self):
+        no_data = self.out_file.band_values[
+            self.out_file.band_values == NO_DATA_VALUE
+        ]
+        assert len(no_data) > 0
+
+    @pytest.mark.skip(reason="TODO - Create test files with MODIS projection")
     def test_raster_band_values(self):
         source_band_values = tile_raster_band_values(400, 0)
         mosaic_band_values = self.out_file.band_values[
             self.out_file.band_values != NO_DATA_VALUE
         ]
-        assert len(source_band_values) == len(mosaic_band_values)
+        assert_equal(source_band_values, mosaic_band_values)
 
 
 @pytest.mark.runner_args(source_type='fraction')
@@ -61,6 +66,7 @@ class TestFraction:
         filename = self.run_year + self.day_of_year + '_SCA.tif'
         assert self.out_file.filename == filename
 
+    @pytest.mark.skip(reason="TODO - Create test files with MODIS projection")
     def test_raster_geo_transform(self):
         assert self.out_file.ulx == 0
         assert self.out_file.uly == 6
@@ -83,13 +89,21 @@ class TestFraction:
         assert self.out_file.band_values.max() == 100
 
     def test_raster_band_filter_lower_limit(self):
-        lower_limit = self.out_file.band_values[self.out_file.band_values < 0]
-        lower_limit = lower_limit[lower_limit != NO_DATA_VALUE]
-        assert len(lower_limit) == 0
+        data_values = self.out_file.band_values[
+            self.out_file.band_values != NO_DATA_VALUE
+        ]
+        assert data_values.min() == 15
 
+    def test_raster_band_no_data_value(self):
+        no_data = self.out_file.band_values[
+            self.out_file.band_values == NO_DATA_VALUE
+        ]
+        assert len(no_data) > 0
+
+    @pytest.mark.skip(reason="TODO - Create test files with MODIS projection")
     def test_raster_band_values(self):
         source_band_values = tile_raster_band_values(100, 15)
         mosaic_band_values = self.out_file.band_values[
             self.out_file.band_values != NO_DATA_VALUE
         ]
-        assert len(source_band_values) == len(mosaic_band_values)
+        assert_equal(source_band_values, mosaic_band_values)

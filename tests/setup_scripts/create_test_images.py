@@ -4,6 +4,8 @@ import sys
 import numpy
 from osgeo import gdal, gdalnumeric, osr
 
+from snowrs import TileMerger
+
 # Utility script to setup tests sources.
 # Creates four tests files that together form a L-shaped mosaic output
 #  _____
@@ -18,15 +20,17 @@ from osgeo import gdal, gdalnumeric, osr
 
 TILES = {
     'upper_left.tif':
-        numpy.array([[-999, 0, 15], [10, 20, 100], [100, 2450, 2450]]),
+        numpy.array([[2550, 0, 15], [10, 20, 100], [100, 2450, 2450]]),
     'middle.tif':
-        numpy.array([[-999, 0, 0], [10, 200, 400], [400, 2500, 2500]]),
+        numpy.array([[2550, 0, 0], [10, 200, 400], [400, 2500, 2500]]),
     'upper_right.tif':
-        numpy.array([[-999, 15, 0], [10, 800, 900], [-10, 2550, 2550]]),
+        numpy.array([[2550, 15, 0], [10, 800, 900], [55, 2550, 2550]]),
     'bottom_right.tif':
-        numpy.array([[-999, 0, 0], [-10, -20, 20], [10, 2300, 2300]]),
+        numpy.array([[2550, 0, 0], [10, 70, 20], [10, 2300, 2300]]),
 }
-geo_transform = {
+TILE_VALUES = numpy.array([*TILES.values()])
+# TODO - Fix coordinates using MODIS projection
+GEO_TRANSFORM = {
     'upper_left.tif': [0, 1, 0, 6, 0, -1],
     'middle.tif': [3, 1, 0, 6, 0, -1],
     'upper_right.tif': [6, 1, 0, 6, 0, -1],
@@ -67,8 +71,8 @@ def create_images():
             gdal.GDT_Int16  # Int16 to enable NoData value of -999
         )
 
-        output_file.SetGeoTransform(geo_transform[tile_name])
-        output_file.SetProjection(PROJECTION.ExportToWkt())
+        output_file.SetGeoTransform(GEO_TRANSFORM[tile_name])
+        output_file.SetProjection(TileMerger.SOURCE_FILE_PROJECTION)
 
         target_band = output_file.GetRasterBand(tile_bands)
         target_band.SetNoDataValue(2550)  # From MODSCAG spec

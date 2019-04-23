@@ -8,7 +8,7 @@ before_install:
   - conda config --set always_yes yes
 
 install:
-  - conda env create -q --file $TRAVIS_BUILD_DIR/conda/environment.txt -p $HOME/miniconda/envs/snow_rs
+  - conda env create -q --file $TRAVIS_BUILD_DIR/conda/environment.yml -p $HOME/miniconda/envs/snow_rs
 
 before_script:
   - export PYTHONPATH=$TRAVIS_BUILD_DIR
