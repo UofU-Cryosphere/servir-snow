@@ -7,8 +7,7 @@ setup(
     url='https://github.com/UofU-Cryosphere/servir-snow',
     author='Joachim Meyer',
     author_email='j.meyer@utah.edu',
-    description='Library with helper functions and scripts '
-                'for GeoTiff processing',
+    description='Library to process MODIS tiles',
     install_requires=[
         'click', 'beautifulsoup4', 'gdal', 'numpy',  'pyproj', 'requests'
     ]
